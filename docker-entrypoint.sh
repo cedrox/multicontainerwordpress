@@ -82,6 +82,10 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
    
         chown -R "$user:$group" /var/www/html
 
+		# Install mod_header
+		# a2enmod headers
+		# apache2 -k graceful
+
 		if [ ! -e .htaccess ]; then
 			# NOTE: The "Indexes" option is disabled in the php:apache base image
 			cat > .htaccess <<-'EOF'
@@ -95,6 +99,16 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 				RewriteRule . /index.php [L]
 				</IfModule>
 				# END WordPress
+
+				# activate mod_deflate
+				<IfModule mod_deflate.c>
+				AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript
+				</IfModule>
+
+				# Security : need mod_header activated in apache config
+				<IfModule mod_headers.c>
+				Header append X-FRAME-OPTIONS "SAMEORIGIN"
+				</IfModule>
 			EOF
 			chown "$user:$group" .htaccess
 		fi
